@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  app:
+    image: golang:1.19
+    working_dir: '/app'
+    entrypoint: "go run tiger-bench.go -db timescaledb:5432,homework,interview_user,123 -file ./scripts/query_params.csv"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      pg_client:
+        condition: service_completed_successfully
+    volumes:
+      - .:/app
+  pg_client:
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    working_dir: "/db"
+    command: "sh run.sh"
+    environment:
+      PGDATABASE: postgres
+      PGHOST: timescaledb
+      PGPORT: 5432
+      PGUSER: root
+      PGPASSWORD: root
+    build:
+      context: .
+      dockerfile: psqlcli.Dockerfile
+    volumes:
+      - ./scripts/db:/db
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg14-latest
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - ./data/db:/docker-entrypoint-initdb.d/
+
+  vault:
+    image: vault:1.6.3
+    environment:
+      - SKIP_SETCAP=1
+      - VAULT_DEV_ROOT_TOKEN_ID=8fb95528-57c6-422e-9722-d2147bcba8ed
