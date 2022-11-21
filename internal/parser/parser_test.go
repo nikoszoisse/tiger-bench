@@ -8,7 +8,7 @@ import (
 
 func Test(t *testing.T) {
 
-	outputRecords := ReadCsvFile("./data/query_params.csv")
+	outputRecords := ReadCsvFile("../../scripts/query_params.csv")
 
 	for {
 		select {

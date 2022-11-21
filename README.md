@@ -15,10 +15,9 @@ The service container which runs the benchmark is named `app`
 **What you expect** to see is, **STATS** avg, median, std, min, max, and total time.
 
 ----
-### Install
+### Install as binary
 ```shell
-go get github.com/nikoszoisse/tiger-bench &&
-go install github.com/nikoszoisse/tiger-bench
+go install github.com/nikoszoisse/tiger-bench@latest
 ```
 
 ### Client Usage Example
