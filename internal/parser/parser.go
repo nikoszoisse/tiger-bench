@@ -110,15 +110,10 @@ func readCsvFileLazy(file *os.File, resultChannel chan *Result) {
 	}()
 	csvReader := csv.NewReader(file)
 
-	var timeReadBegin *time.Time
 	//Start Reading the rows by line -> async publish it
 	for {
 		// Read the row
 		row, err := csvReader.Read()
-		if timeReadBegin == nil {
-			t := time.Now()
-			timeReadBegin = &t
-		}
 		// Check if EOF then stop reading
 		if errors.Is(err, io.EOF) {
 			return
@@ -129,7 +124,7 @@ func readCsvFileLazy(file *os.File, resultChannel chan *Result) {
 			line, _ := csvReader.FieldPos(0)
 
 			// Build the QueryRecord from row
-			queryRecord, err := buildRecord(row, line, *timeReadBegin)
+			queryRecord, err := buildRecord(row, line)
 			if err != nil {
 				resultChannel <- &Result{nil, err}
 				continue
@@ -142,7 +137,7 @@ func readCsvFileLazy(file *os.File, resultChannel chan *Result) {
 }
 
 // buildRecord will transform row data to a QueryRecord
-func buildRecord(record []string, line int, begin time.Time) (*QueryRecord, error) {
+func buildRecord(record []string, line int) (*QueryRecord, error) {
 	startTime, err := time.Parse(TimeLayout, record[startTimePos])
 	if err != nil {
 		return nil, err
@@ -153,10 +148,9 @@ func buildRecord(record []string, line int, begin time.Time) (*QueryRecord, erro
 		return nil, err
 	}
 	return &QueryRecord{
-		Hostname:    record[hostNamePos],
-		StartTime:   startTime,
-		EndTime:     endTime,
-		Line:        line,
-		CreatedTime: begin.Add(time.Now().Sub(begin)),
+		Hostname:  record[hostNamePos],
+		StartTime: startTime,
+		EndTime:   endTime,
+		Line:      line,
 	}, nil
 }

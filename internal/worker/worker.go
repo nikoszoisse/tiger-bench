@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/nikoszoisse/tiger-bench/internal/config"
+	"github.com/nikoszoisse/tiger-bench/internal/metrics"
 	"github.com/nikoszoisse/tiger-bench/internal/parser"
 	"github.com/nikoszoisse/tiger-bench/pkg/logger"
 	"time"
@@ -56,11 +57,11 @@ func (w *worker) run() {
 			case record := <-w.inputChannel:
 				if record != nil {
 					logger.DefaultLogger.Debug("[worker %s] processing %+v \n", w.name, record)
-
 					// build & execute the query
-					err := w.queryRecord(record)
 					//keep duration since query creation
-					duration := time.Since(record.CreatedTime)
+					duration, err := metrics.WithTrack(w.ctx, func(ctx context.Context) error {
+						return w.queryRecord(record)
+					})
 
 					if err != nil {
 						w.outputHandler(w.name, nil, duration)
