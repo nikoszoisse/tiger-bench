@@ -7,11 +7,10 @@ import (
 
 // QueryRecord represents the record that we are going to build sql
 type QueryRecord struct {
-	Hostname    string
-	StartTime   time.Time
-	EndTime     time.Time
-	Line        int
-	CreatedTime time.Time
+	Hostname  string
+	StartTime time.Time
+	EndTime   time.Time
+	Line      int
 }
 
 // Result is the result of a csvReader after transforming row data
