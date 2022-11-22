@@ -147,6 +147,12 @@ func buildRecord(record []string, line int) (*QueryRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if startTime.After(endTime) {
+		return nil, errors.New(
+			fmt.Sprintf("Invalid row on line %d startTime > endTime (%s, %s)", line, startTime, endTime))
+	}
+
 	return &QueryRecord{
 		Hostname:  record[hostNamePos],
 		StartTime: startTime,
